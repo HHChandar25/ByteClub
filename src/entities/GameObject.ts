@@ -17,6 +17,12 @@ export class GameObject {
     this.spriteName = spriteName;
   }
 
+  /**
+   * Updates the object. Intended to be overridden in subclasses.
+   *
+   * @param deltaTime - Time elapsed since the last update in milliseconds.
+   */
+  // eslint-disable-next-line class-methods-use-this, @typescript-eslint/no-unused-vars
   public update(deltaTime: number): void {
     // Override in subclasses
   }
@@ -28,17 +34,5 @@ export class GameObject {
       width: this.width,
       height: this.height
     };
-  }
-
-  /**
-   * Check collision with another object
-   */
-  public collidesWith(other: GameObject): boolean {
-    return (
-      this.x < other.x + other.width &&
-      this.x + this.width > other.x &&
-      this.y < other.y + other.height &&
-      this.y + this.height > other.y
-    );
   }
 }

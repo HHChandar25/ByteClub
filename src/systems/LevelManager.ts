@@ -1,4 +1,5 @@
-import { Grid, Tile } from './Grid.js';
+/* eslint-disable @typescript-eslint/naming-convention */
+import { Grid } from './Grid.js';
 import { PushableObject } from '../entities/PushableObject.js';
 import { CommandBlock, Direction, BlockColor, CommandColor } from '../entities/CommandBlock.js';
 import { Obstacle, ObstacleColor, ObstacleBlockType } from '../entities/Obstacle.js';
@@ -178,16 +179,22 @@ export class LevelManager {
     });
   }
 
-  /**
-   * Get current level data
-   */
   public getCurrentLevel(): LevelData {
     return this.levels[this.currentLevelIndex];
   }
 
   /**
-   * Load level into grid and return setup data
-   */
+   * Processes level data and instantiates all game entities within the world.
+   * * This method performs several key operations:
+   * 1. Maps numeric grid data to tile type strings using a lookup table.
+   * 2. Synchronizes the logical `Grid` state with the level definition.
+   * 3. Converts grid-based coordinates into world-space (pixels) for physical objects.
+   * 4. Handles 'Obstacle Groups', ensuring individual blocks in a group reference each other.
+   *
+   * @param grid - The Grid instance to be populated with tile data.
+   * @param tileSize - The pixel size of each tile, used for spatial conversion.
+   * @returns An object containing the player start position and collections of all spawned entities
+  */
   public loadLevel(grid: Grid, tileSize: number): {
     playerStart: { x: number, y: number },
     pushables: PushableObject[],
@@ -272,6 +279,7 @@ export class LevelManager {
 
   /**
    * Advance to next level
+   * @returns True only if there is a next level
    */
   public nextLevel(): boolean {
     if (this.currentLevelIndex < this.levels.length - 1) {
@@ -288,22 +296,17 @@ export class LevelManager {
     this.currentLevelIndex = 0;
   }
 
-  /**
-   * Get current level number
-   */
   public getCurrentLevelNumber(): number {
     return this.currentLevelIndex + 1;
   }
 
-  /**
-   * Get total number of levels
-   */
   public getTotalLevels(): number {
     return this.levels.length;
   }
 
   /**
-   * Check if all levels completed
+   * Check if all levels are completed
+   * @returns True only if the game is completed
    */
   public isGameComplete(): boolean {
     return this.currentLevelIndex >= this.levels.length - 1;

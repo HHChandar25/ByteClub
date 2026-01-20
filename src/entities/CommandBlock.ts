@@ -51,9 +51,6 @@ export class CommandBlock extends GameObject {
     this.targetY = this.y;
   }
 
-  /**
-   * Get sprite key based on colors and direction
-   */
   private static getSpriteKey(
     blockColor: BlockColor,
     commandColor: CommandColor,
@@ -66,6 +63,13 @@ export class CommandBlock extends GameObject {
     }
   }
 
+  /**
+   * Moves the object by the specified grid offset and sets the target position.
+   *
+   * @param dx - Horizontal grid offset.
+   * @param dy - Vertical grid offset.
+   * @param tileSize - Size of a single grid tile.
+  */
   public push(dx: number, dy: number, tileSize: number): void {
     this.gridX += dx;
     this.gridY += dy;
@@ -75,8 +79,14 @@ export class CommandBlock extends GameObject {
   }
 
   /**
-   * Check if command block is between plus and minus blocks OR part of complete circuit
-   */
+   * Checks if the object should be activated based on surrounding tiles or a circuit flag.
+   *
+   * @param grid - The grid to check for activation.
+   * @param gridX - The object's x-coordinate on the grid.
+   * @param gridY - The object's y-coordinate on the grid.
+   * @param [isInCircuit=false] - If true, forces activation regardless of surrounding tiles.
+   * @returns True if the object becomes active, otherwise false.
+  */
   public checkActivation(
     grid: Grid,
     gridX: number,
@@ -110,7 +120,13 @@ export class CommandBlock extends GameObject {
   }
 
   /**
-   * Update command block timer and check for execution
+   * Updates the object's movement and activation state.
+   *
+   * - Moves the object toward its target if `isMoving` is true.
+   * - Tracks the activation timer and returns true when the activation interval is reached.
+   *
+   * @param deltaTime - Time elapsed since the last update in milliseconds.
+   * @returns True if the activation interval has elapsed, otherwise false.
    */
   public override update(deltaTime: number): boolean {
     if (this.isMoving) {
@@ -146,9 +162,6 @@ export class CommandBlock extends GameObject {
     return false;
   }
 
-  /**
-   * Get the direction this command moves obstacles
-   */
   public getDirection(): { dx: number, dy: number } {
     switch (this.direction) {
       case 'up': return { dx: 0, dy: -1 };
@@ -162,9 +175,6 @@ export class CommandBlock extends GameObject {
     return this.blockColor;
   }
 
-  /**
-   * Get command color (what this block moves)
-   */
   public getCommandColor(): CommandColor {
     return this.commandColor;
   }

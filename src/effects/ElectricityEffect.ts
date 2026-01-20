@@ -23,11 +23,21 @@ export class ElectricityEffect {
     this.isHorizontal = Math.abs(x2 - x1) > Math.abs(y2 - y1);
   }
 
+  /**
+   * Updates the animation state based on the elapsed time.
+   *
+   * @param deltaTime - The time elapsed since the last update in milliseconds.
+  */
   public update(deltaTime: number): void {
     this.animationTimer += deltaTime;
     this.waveOffset = (this.animationTimer / 100) % (Math.PI * 2);
   }
 
+  /**
+   * Renders the animated wave with sparks on the provided canvas context.
+   *
+   * @param ctx - The canvas rendering context to draw on.
+  */
   public render(ctx: CanvasRenderingContext2D): void {
     ctx.save();
 

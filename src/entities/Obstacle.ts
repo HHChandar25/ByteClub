@@ -65,8 +65,18 @@ export class Obstacle extends GameObject {
   }
 
   /**
-   * Check if this block can move as part of its group (with chain support)
-   */
+   * Determines whether a group of obstacles can move in the specified direction.
+   *
+   * @param dx - Horizontal movement offset.
+   * @param dy - Vertical movement offset.
+   * @param grid - The grid to check movement against.
+   * @param allObstacles - All obstacles present in the grid.
+   * @param [pushables=[]] - Optional pushable objects to consider in movement.
+   * @param [player=null] - Optional player to check for blocking.
+   * @param [commandBlocks=[]] - Optional command blocks affecting movement.
+   * @param [movedObstacles=new Set()] - Tracks obstacles already moved in this check.
+   * @returns Object indicating if movement is possible and the chain of movable obstacles.
+  */
   private canGroupMove(
     dx: number,
     dy: number,
@@ -157,8 +167,23 @@ export class Obstacle extends GameObject {
   }
 
   /**
-   * Try to move obstacle in a direction
-   */
+   * Attempts to move the obstacle (or its group) in the specified direction.
+   *
+   * - Checks for grid bounds, walkable tiles, player, pushables, command blocks,
+   *   and other obstacles that might block movement.
+   * - Handles both single-block and grouped movement with chained obstacles.
+   * - Updates grid and target positions and sets `isMoving` to true if movement succeeds.
+   *
+   * @param dx - Horizontal movement offset.
+   * @param dy - Vertical movement offset.
+   * @param grid - The grid to check for movement validity.
+   * @param obstacles - All obstacles in the grid.
+   * @param [pushables=[]] - Optional pushable objects to consider.
+   * @param [player=null] - Optional player to check for collisions.
+   * @param commandColor - The command color required to move this obstacle.
+   * @param [commandBlocks=[]] - Optional command blocks affecting movement.
+   * @returns True if the movement was successful, otherwise false.
+  */
   public tryMove(
     dx: number,
     dy: number,
@@ -292,8 +317,18 @@ export class Obstacle extends GameObject {
     return walkableTiles.includes(type);
   }
 
+  /**
+   * Updates the obstacle's position toward its target if it is moving.
+   *
+   * - Moves the object smoothly based on its speed and elapsed time.
+   * - Stops movement when the target position is reached.
+   *
+   * @param deltaTime - Time elapsed since the last update in milliseconds.
+  */
   public override update(deltaTime: number): void {
-    if (!this.isMoving) return;
+    if (!this.isMoving) {
+      return;
+    }
 
     const dt: number = deltaTime / 1000;
     const moveDistance: number = this.speed * dt;

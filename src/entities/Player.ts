@@ -38,10 +38,19 @@ export class Player extends GameObject {
   }
 
   /**
-   * Try to move in a direction
-   * pushables now includes both regular pushable objects AND command blocks
-   * obstacles parameter added to check for yellow obstacles
-   */
+   * Attempts to move the object in a given direction.
+   *
+   * - Considers pushables (including command blocks) and obstacles when checking movement.
+   * - Updates the object's target position and sets `isMoving` to true if movement succeeds.
+   *
+   * @param dx - Horizontal movement offset.
+   * @param dy - Vertical movement offset.
+   * @param grid - The grid to validate movement against.
+   * @param pushables - Objects that can be pushed, including command blocks.
+   * @param [isHolding=false] - Whether the object is being held (affects movement rules).
+   * @param [obstacles=[]] - Obstacles to check for blocking movement.
+   * @returns True if the movement succeeded, otherwise false.
+  */
   public tryMove(
     dx: number,
     dy: number,
@@ -166,9 +175,20 @@ export class Player extends GameObject {
   }
 
   /**
-   * Try to push a chain of objects
-   * Returns true if the entire chain can be pushed and pushes them all
-   */
+   * Attempts to move a chain of pushable objects in a specified direction.
+   * * The method identifies all adjacent pushable objects in a line starting from `firstObj`.
+   * It validates if the "final" position (the space after the last object in the chain)
+   * is clear of boundaries, non-walkable tiles, static obstacles, or other pushables.
+   * If the path is clear, it moves the entire chain.
+   *
+   * @param firstObj - The initial object being pushed.
+   * @param dx - The horizontal grid direction (-1, 0, or 1).
+   * @param dy - The vertical grid direction (-1, 0, or 1).
+   * @param grid - The game grid used for boundary and tile validation.
+   * @param pushables - Array of all pushable objects currently in the scene.
+   * @param obstacles - Array of static obstacles to check for collisions.
+   * @returns True if the chain was successfully pushed; false if blocked.
+  */
   private tryPushChain(
     firstObj: Pushable,
     dx: number,
@@ -233,8 +253,16 @@ export class Player extends GameObject {
   }
 
   /**
-   * Get pushable object at grid position
-   */
+   * Locates a pushable object at a specific grid coordinate.
+   * * This method iterates through the provided array and converts each object's
+   * world-space coordinates (pixels) into grid-space coordinates using `tileSize`
+   * to determine if it occupies the target cell.
+   *
+   * @param gridX - The target horizontal grid index.
+   * @param gridY - The target vertical grid index.
+   * @param pushables - The collection of pushable objects to search.
+   * @returns The object found at the coordinates, or null if the cell is empty.
+  */
   private getPushableAt(gridX: number, gridY: number, pushables: Pushable[]): Pushable | null {
     for (const obj of pushables) {
       const objGridX: number = Math.floor(obj.x / this.tileSize);
@@ -248,8 +276,13 @@ export class Player extends GameObject {
   }
 
   /**
-   * Check if tile type is walkable
-   */
+   * Determines if a specific tile type allows for movement or object placement.
+   * * This is a static utility used to filter out non-traversable terrain
+   * (like walls or water) by checking against a whitelist of walkable floor types.
+   *
+   * @param type - The unique identifier/string key of the tile type.
+   * @returns True if the tile is a floor or exit; false otherwise.
+  */
   private static isWalkableTile(type: string): boolean {
     const walkableTiles: string[] = ['floor1', 'floor2', 'floor3', 'exit'];
     return walkableTiles.includes(type);
@@ -271,6 +304,15 @@ export class Player extends GameObject {
     }
   }
 
+  /**
+   * Updates the object's position based on its current movement state.
+   * * This method handles smooth linear interpolation between the current position
+   * and a target destination. It calculates movement based on elapsed time
+   * (frame-rate independence) and ensures the object snaps exactly to the target
+   * coordinates once it is within range to prevent overshooting.
+   *
+   * @param deltaTime - The time elapsed since the last frame in milliseconds.
+  */
   public override update(deltaTime: number): void {
     if (!this.isMoving) {
       return;

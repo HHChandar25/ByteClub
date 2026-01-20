@@ -110,8 +110,8 @@ export class Game {
   }
 
   /**
-   *
-   */
+    * Starts the main loop and sets the running state to true.
+  */
   public start(): void {
     this.isRunning = true;
     this.lastTime = performance.now();
@@ -119,8 +119,8 @@ export class Game {
   }
 
   /**
-   *
-   */
+    * Stops the main loop by setting the running state to false.
+  */
   public stop(): void {
     this.isRunning = false;
   }
@@ -359,7 +359,6 @@ export class Game {
 
   private executeCommand(cmdBlock: CommandBlock): void {
     const direction: { dx: number; dy: number } = cmdBlock.getDirection();
-    const blockColor: string = cmdBlock.getBlockColor();
     const commandColor: string = cmdBlock.getCommandColor();
 
     const allPushables: Pushable[] = [

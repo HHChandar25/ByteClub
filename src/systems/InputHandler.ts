@@ -1,5 +1,6 @@
 export class InputHandler {
   private keys: Map<string, boolean> = new Map();
+
   private keyPressed: Map<string, boolean> = new Map();
 
   public constructor() {
@@ -24,25 +25,38 @@ export class InputHandler {
   }
 
   /**
-   * Check if key is currently down
+   * Determines if a specific key is currently being held down.
+   * Useful for continuous actions like running or sustained movement.
+   * * @param key - The KeyboardEvent key value (e.g., 'Shift', 'Control').
+   * @returns True if the key is currently depressed.
    */
   public isKeyDown(key: string): boolean {
     return this.keys.get(key) || false;
   }
 
   /**
-   * Check if key was just pressed (returns true only once per press)
+   * Determines if a key was pressed since the last check, then resets its state.
+   * This implementation ensures that an action (like jumping or interacting)
+   * only triggers once even if the key is held down.
+   * * @param key - The KeyboardEvent key value (e.g., 'Enter', 'Escape').
+   * @returns True only on the first frame the key is detected as pressed.
    */
   public isKeyPressed(key: string): boolean {
     const pressed: boolean = this.keyPressed.get(key) || false;
     if (pressed) {
+      // Consume the input event so it doesn't trigger again next frame
       this.keyPressed.set(key, false);
     }
     return pressed;
   }
 
   /**
-   * Get movement direction from arrow keys or WASD
+   * Translates keyboard input into a normalized grid direction vector.
+   * Supports Arrow keys and WASD (case-insensitive).
+   * * Note: This implementation prioritizes vertical movement over horizontal
+   * if multiple keys are pressed simultaneously, and uses `isKeyPressed`
+   * to ensure discrete tile-by-tile movement steps.
+   * @returns A direction object with x and y components ranging from -1 to 1.
    */
   public getMovementDirection(): { x: number, y: number } {
     let dx: number = 0;
@@ -62,7 +76,9 @@ export class InputHandler {
   }
 
   /**
-   * Check if Shift key is held down
+   * Checks if the Shift key is currently depressed.
+   * Commonly used for toggling states like "Sprinting" or "Slow walk".
+   * @returns True if either Left or Right Shift is held.
    */
   public isShiftHeld(): boolean {
     return this.isKeyDown('Shift');

@@ -19,15 +19,29 @@ export class PushableObject extends GameObject {
    * Push the object in a direction
    */
   public push(dx: number, dy: number, tileSize: number): void {
-    if (this.isMoving) return;
+    if (this.isMoving) {
+      return;
+    }
 
     this.targetX = this.x + (dx * tileSize);
     this.targetY = this.y + (dy * tileSize);
     this.isMoving = true;
   }
 
+  /**
+   * Updates the object's world position every frame using linear interpolation.
+   * * * This method calculates frame-rate independent movement. It computes the
+   * Euclidean distance to the target and moves the object by a specific `moveDistance`
+   * defined by the object's speed and the elapsed time.
+   * * To prevent "jitter" or overshooting the destination, the object will snap
+   * exactly to the target coordinates if it is within range of its next step.
+   *
+   * @param deltaTime - The time elapsed since the last update in milliseconds.
+  */
   public override update(deltaTime: number): void {
-    if (!this.isMoving) return;
+    if (!this.isMoving) {
+      return;
+    }
 
     const dt: number = deltaTime / 1000;
     const moveDistance: number = this.speed * dt;

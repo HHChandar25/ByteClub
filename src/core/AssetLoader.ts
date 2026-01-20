@@ -12,6 +12,12 @@ export class AssetLoader {
 
   private onComplete: (() => void) | null = null;
 
+  /**
+    * Loads a list of assets and calls a callback when all are loaded.
+    *
+    * @param assetList - The assets to load.
+    * @param callback - Called when all assets are loaded.
+  */
   public load(assetList: Asset[], callback: () => void): void {
     this.toLoad = assetList;
     this.loaded = 0;
@@ -62,6 +68,10 @@ export class AssetLoader {
     return this.loaded / this.toLoad.length;
   }
 
+  /**
+   * Checks if all assets have been loaded.
+   * @returns True if all assets are loaded, false otherwise.
+   */
   public isLoaded(): boolean {
     return this.loaded === this.toLoad.length;
   }
