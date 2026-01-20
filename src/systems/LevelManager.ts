@@ -84,6 +84,69 @@ export class LevelManager {
       exit: { x: 12, y: 5 }
     });
 
+    // Level 3
+    this.levels.push({
+      name: 'Level 3',
+      grid: [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 5, 5, 5, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 5, 2, 5, 0, 0, 0, 0, 0],
+        [0, 0, 0, 8, 2, 9, 5, 5, 2, 5, 4, 5, 2, 2, 0],
+        [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7],
+        [0, 0, 2, 2, 2, 2, 2, 4, 5, 4, 2, 5, 0, 0, 0],
+        [0, 0, 2, 2, 2, 2, 2, 0, 0, 4, 2, 5, 0, 0, 0],
+        [0, 0, 0, 2, 2, 2, 0, 0, 0, 4, 5, 5, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ],
+      playerStart: { x: 2, y: 5 },
+      pushables: [],
+      pushablePlusBlocks: [],
+      commandBlocks: [
+        { x: 4, y: 5, direction: 'up', blockColor: 'gray', commandColor: 'yellow' },
+        { x: 9, y: 4, direction: 'down', blockColor: 'gray', commandColor: 'yellow' }
+      ],
+      obstacleGroups: [
+        { x: 8, y: 3, color: 'yellow', blocks: ['top', 'bottom'] },
+        { x: 10, y: 5, color: 'yellow', blocks: ['top', 'bottom'] }
+      ],
+      exit: { x: 14, y: 4 }
+    });
+
+    // Level 4
+    this.levels.push({
+      name: 'Level 4 - Narrow Path',
+      grid: [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 5, 5, 4, 0, 5, 5, 4, 0, 0],
+        [0, 0, 0, 0, 0, 0, 5, 1, 4, 0, 5, 1, 4, 0, 0],
+        [0, 0, 1, 1, 1, 9, 5, 1, 4, 5, 5, 1, 4, 5, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 7],
+        [0, 0, 0, 2, 3, 2, 4, 5, 5, 2, 4, 5, 4, 5, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 5, 3, 4, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 4, 5, 4, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ],
+      playerStart: { x: 2, y: 5 },
+      pushables: [],
+      pushablePlusBlocks: [{ x: 4, y: 4 }],
+      commandBlocks: [
+        { x: 7, y: 5, direction: 'up', blockColor: 'gray', commandColor: 'yellow' },
+        { x: 8, y: 5, direction: 'down', blockColor: 'gray', commandColor: 'yellow' }
+      ],
+      obstacleGroups: [
+        { x: 7, y: 3, color: 'yellow', blocks: ['top', 'bottom'] },
+        { x: 9, y: 5, color: 'yellow', blocks: ['top', 'bottom'] },
+        { x: 11, y: 3, color: 'yellow', blocks: ['top', 'bottom'] }
+      ],
+      exit: { x: 14, y: 5 }
+    });
+
   }
 
   /**
