@@ -34,6 +34,97 @@ export class LevelManager {
   }
 
   /**
+   * Get current level data
+   */
+  public getCurrentLevel(): LevelData {
+    return this.levels[this.currentLevelIndex];
+  }
+
+  /**
+   * Load level into grid and return setup data   */
+  public loadLevel(grid: Grid, tileSize: number): {
+    playerStart: { x: number, y: number },
+    pushables: PushableObject[],
+    pushablePlusBlocks: PushablePlusBlock[],
+    commandBlocks: CommandBlock[],
+    obstacles: Obstacle[],
+    exit: { x: number, y: number }
+  } {
+    // eslint-disable-next-line @typescript-eslint/typedef
+    const level = this.getCurrentLevel();
+
+    const tileMap: { [key: number]: string } = {
+      0: 'empty',
+      1: 'floor1',
+      2: 'floor2',
+      3: 'floor3',
+      4: 'wall-start',
+      5: 'wall-end',
+      7: 'exit',
+      8: 'plus-block',
+      9: 'minus-block',
+    };
+
+    for (let y: number = 0; y < level.grid.length && y < grid.getHeight(); y++) {
+      for (let x: number = 0; x < level.grid[y].length && x < grid.getWidth(); x++) {
+        const tileType: string = tileMap[level.grid[y][x]];
+        grid.setTile(x, y, tileType);
+      }
+    }
+
+    const pushables: PushableObject[] = [];
+    for (const pos of level.pushables) {
+      pushables.push(new PushableObject(pos.x * tileSize, pos.y * tileSize, tileSize, tileSize));
+    }
+
+    const commandBlocks: CommandBlock[] = [];
+    for (const cmd of level.commandBlocks) {
+      commandBlocks.push(
+        new CommandBlock(cmd.x, cmd.y, tileSize, cmd.direction, cmd.blockColor, cmd.commandColor)
+      );
+    }
+
+    const pushablePlusBlocks: PushablePlusBlock[] = [];
+    for (const ppb of level.pushablePlusBlocks) {
+      pushablePlusBlocks.push(new PushablePlusBlock(ppb.x, ppb.y, tileSize));
+    }
+
+    const obstacles: Obstacle[] = [];
+    for (const group of level.obstacleGroups) {
+      const groupBlocks: Obstacle[] = [];
+
+      for (let i: number = 0; i < group.blocks.length; i++) {
+        const blockType: ObstacleBlockType = group.blocks[i];
+
+        const isHorizontal: boolean = ['left', 'center', 'right'].includes(blockType);
+
+        let obstacle: Obstacle;
+        if (isHorizontal) {
+          obstacle = new Obstacle(group.x + i, group.y, tileSize, group.color, blockType);
+        } else {
+          obstacle = new Obstacle(group.x, group.y + i, tileSize, group.color, blockType);
+        }
+
+        groupBlocks.push(obstacle);
+        obstacles.push(obstacle);
+      }
+
+      for (const block of groupBlocks) {
+        block.setObstacleGroup(groupBlocks);
+      }
+    }
+
+    return {
+      playerStart: level.playerStart,
+      pushables: pushables,
+      pushablePlusBlocks: pushablePlusBlocks,
+      commandBlocks: commandBlocks,
+      obstacles: obstacles,
+      exit: level.exit
+    };
+  }
+
+  /**
    * Advance to next level
    */
   public nextLevel(): boolean {
