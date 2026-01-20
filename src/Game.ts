@@ -1,188 +1,133 @@
-/**
- * Represents a basic Game Loop based on `requestAnimationFrame()`.
- *
- * The implementation of this class depends on another class: `Game`. This
- * means that, if you use this class, you need to either have a `Game` class
- * that exactly implements the three methods `processInput()`, `update(delta)`
- * and `render()` or change the code in the `step()` method of this class so it
- * represents your own game methods.
- *
- * @see https://gameprogrammingpatterns.com/game-loop.html
- * @author BugSlayer
- */
+import { AssetLoader, Asset } from './AssetLoader.js';
+import { Renderer } from './Renderer.js';
+import { Grid } from '../systems/Grid.js';
+import { InputHandler } from '../systems/InputHandler.js';
+import { LevelManager } from '../systems/LevelManager.js';
+import { Player } from '../entities/Player.js';
+import { PushableObject } from '../entities/PushableObject.js';
+import { CommandBlock } from '../entities/CommandBlock.js';
+import { Obstacle } from '../entities/Obstacle.js';
 
-export default abstract class Game {
-  public static readonly STATE_IDLE: number = 0;
+export class Game {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private assetLoader: AssetLoader;
+  private renderer: Renderer;
+  private grid: Grid;
+  private inputHandler: InputHandler;
+  private levelManager: LevelManager;
 
-  public static readonly STATE_STARTING: number = 1;
+  private player!: Player;
+  private pushables: PushableObject[] = [];
+  private commandBlocks: CommandBlock[] = [];
+  private obstacles: Obstacle[] = [];
 
-  public static readonly STATE_RUNNING: number = 2;
+  private exitTile!: { x: number; y: number };
 
-  public static readonly STATE_STOPPING: number = 3;
+  private isRunning = false;
+  private lastTime = 0;
+  private levelComplete = false;
 
-  public static readonly NORMAL_MODE: number = 0;
+  public constructor(canvasId: string) {
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    if (!canvas) throw new Error('Canvas not found');
 
-  public static readonly PLAY_CATCH_UP: number = 1;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('No 2D context');
 
-  /**
-   * The current mode of the gameloop
-   */
-  private mode: number;
+    this.canvas = canvas;
+    this.ctx = ctx;
 
-  /**
-   * The current state of this gameloop
-   */
-  private state: number;
+    this.assetLoader = new AssetLoader();
+    this.renderer = new Renderer(ctx, this.assetLoader);
+    this.inputHandler = new InputHandler();
+    this.levelManager = new LevelManager();
 
-  /**
-   * The timestamp of the last update of the game
-   */
-  private previousElapsed: number = 0;
+    const tileSize = 64;
+    this.grid = new Grid(
+      Math.floor(canvas.width / tileSize),
+      Math.floor(canvas.height / tileSize),
+      tileSize
+    );
 
-  /**
-   * Holds the start time of the game
-   */
-  private gameStart: number = 0;
-
-  /**
-   * Holds the time where the last animation step method ended.
-   */
-  private frameEnd: number = 0;
-
-  /**
-   * The total time in milliseconds that is elapsed since the start of the
-   * game
-   */
-  public gameTime: number = 0;
-
-  /**
-   * The amount of frames that are processed since the start of the game
-   */
-  public frameCount: number = 0;
-
-  /**
-   * An indication of the current crames per second of this gameloop
-   */
-  public fps: number = 0;
-
-  /**
-   * An indication of the load of this gameloop. The load is the ratio between
-   * the time needed to update the game and the time the computer waits to
-   * render the next frame.
-   */
-  public load: number = 0;
-
-  /**
-   * Construct a new instance of this class.
-   *
-   * @param mode OPTIONAL, the mode of the gameloop. It defaults to
-   *   GameLoop.NORMAL_MODE, which is fine for simple games
-   */
-  public constructor(mode: number = Game.NORMAL_MODE) {
-    this.state = Game.STATE_IDLE;
-    this.mode = mode;
+    this.loadCurrentLevel();
   }
 
-  /**
-   * Process the input of the game.
-   */
-  public abstract processInput(): void;
+  private loadCurrentLevel(): void {
+    const data = this.levelManager.loadLevel(this.grid, this.grid.getTileSize());
 
-  /**
-   * Update the state of the game
-   *
-   * @param delta The ms elapsed since the last update
-   */
-  public abstract update(delta: number): boolean;
+    this.player = new Player(
+      data.playerStart.x,
+      data.playerStart.y,
+      this.grid.getTileSize()
+    );
 
-  /**
-   * Render the game
-   */
-  public abstract render(): void;
+    this.pushables = data.pushables;
+    this.commandBlocks = data.commandBlocks;
+    this.obstacles = data.obstacles;
+    this.exitTile = data.exit;
 
-  /**
-   * Start the game loop.
-   */
+    this.levelComplete = false;
+  }
+
+  public loadAssets(assets: Asset[], onComplete: () => void): void {
+    this.assetLoader.load(assets, onComplete);
+  }
+
   public start(): void {
-    if (this.state === Game.STATE_IDLE) {
-      this.state = Game.STATE_STARTING;
-      this.gameStart = performance.now();
-      this.frameEnd = this.gameStart;
-      this.previousElapsed = this.gameStart;
-      this.gameTime = 0;
-      this.frameCount = 0;
-      requestAnimationFrame(this.step.bind(this));
-    }
+    this.isRunning = true;
+    this.lastTime = performance.now();
+    this.loop(this.lastTime);
   }
 
-  /**
-   * Requests to gracefully stop the gameloop.
-   */
-  public stop(): void {
-    this.state = Game.STATE_STOPPING;
-  }
+  private loop(time: number): void {
+    if (!this.isRunning) return;
 
-  /**
-   * Returns `true` if the given state exactly matches the current state of
-   * this object
-   *
-   * @param state the state to check
-   * @returns `true` if the given state exactly matches the current state of
-   *   this object
-   */
-  public isInState(state: number): boolean {
-    return this.state === state;
-  }
+    const deltaTime = time - this.lastTime;
+    this.lastTime = time;
 
-  /**
-   * This MUST be an arrow method in order to keep the `this` variable working
-   * correctly. It will be overwritten by another object otherwise caused by
-   * javascript scoping behaviour.
-   *
-   * @param timestamp a `DOMHighResTimeStamp` similar to the one returned by
-   *   `performance.now()`, indicating the point in time when `requestAnimationFrame()`
-   *   starts to execute callback functions
-   */
-  private step(timestamp: number): void {
-    // Handle first animation frame
-    if (this.isInState(Game.STATE_STARTING)) {
-      this.state = Game.STATE_RUNNING;
-    }
-
-    this.processInput();
-
-    // Let the game update itself
-    let shouldStop: boolean = false;
-    if (this.mode === Game.PLAY_CATCH_UP) {
-      const step: number = 1;
-      while (this.previousElapsed < timestamp && !shouldStop) {
-        shouldStop = !this.update(step);
-        this.previousElapsed += step;
-      }
-    } else {
-      const elapsed: number = timestamp - this.previousElapsed;
-      shouldStop = !this.update(elapsed);
-      this.previousElapsed = timestamp;
-    }
-
-    // Let the game render itself
+    this.update(deltaTime);
     this.render();
 
-    // Check if a next animation frame needs to be requested
-    if (!shouldStop || this.isInState(Game.STATE_STOPPING)) {
-      requestAnimationFrame(this.step.bind(this));
-    } else {
-      this.state = Game.STATE_IDLE;
+    requestAnimationFrame(t => this.loop(t));
+  }
+
+  private update(deltaTime: number): void {
+    if (this.levelComplete) return;
+
+    // --- Command block activation logic ---
+    for (const cmd of this.commandBlocks) {
+      const pos = cmd.getGridPosition();
+      cmd.checkActivation(this.grid, pos.x, pos.y);
+      cmd.update(deltaTime);
     }
 
-    // Handle time measurement and analysis
-    const now: number = performance.now();
-    const stepTime: number = timestamp - now;
-    const frameTime: number = now - this.frameEnd;
-    this.fps = Math.round(1000 / frameTime);
-    this.load = stepTime / frameTime;
-    this.frameEnd = now;
-    this.gameTime = now - this.gameStart;
-    this.frameCount += 1;
+    // --- Player movement ---
+    const move = this.inputHandler.getMovementDirection();
+    if (move.x !== 0 || move.y !== 0) {
+      this.player.tryMove(
+        move.x,
+        move.y,
+        this.grid,
+        this.pushables,
+        false,
+        this.obstacles
+      );
+    }
+
+    this.player.update(deltaTime);
+
+    for (const p of this.pushables) p.update(deltaTime);
+    for (const o of this.obstacles) o.update(deltaTime);
+    for (const c of this.commandBlocks) c.update(deltaTime);
+
+    const playerPos = this.player.getGridPosition();
+    if (
+      playerPos.x === this.exitTile.x &&
+      playerPos.y === this.exitTile.y &&
+      !this.player.getIsMoving()
+    ) {
+      this.levelComplete = true;
+    }
   }
 }
