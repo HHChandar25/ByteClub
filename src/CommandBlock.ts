@@ -74,6 +74,41 @@ export class CommandBlock extends GameObject {
   }
 
   /**
+   * Check if command block is between plus and minus blocks OR part of complete circuit
+   */
+  public checkActivation(
+    grid: Grid,
+    gridX: number,
+    gridY: number,
+    isInCircuit: boolean = false
+  ): boolean {
+    if (isInCircuit) {
+      this.isActive = true;
+      return true;
+    }
+
+    // Check horizontal activation (plus on left, minus on right)
+    const leftTile: Tile = grid.getTile(gridX - 1, gridY)!;
+    const rightTile: Tile = grid.getTile(gridX + 1, gridY)!;
+    if (leftTile?.type === 'plus-block' && rightTile?.type === 'minus-block') {
+      this.isActive = true;
+      return true;
+    }
+
+    // Check vertical activation (plus above, minus below)
+    const topTile: Tile = grid.getTile(gridX, gridY - 1)!;
+    const bottomTile: Tile = grid.getTile(gridX, gridY + 1)!;
+
+    if (topTile?.type === 'plus-block' && bottomTile?.type === 'minus-block') {
+      this.isActive = true;
+      return true;
+    }
+
+    this.isActive = false;
+    return false;
+  }
+
+  /**
    * Update command block timer and check for execution
    */
   public override update(deltaTime: number): boolean {
