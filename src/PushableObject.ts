@@ -44,6 +44,10 @@ export class PushableObject extends GameObject {
       const ratio: number = moveDistance / distance;
       this.x += dx * ratio;
       this.y += dy * ratio;
+      this.gridX += dx;
+      this.gridY += dy;
+      this.targetX = this.gridX * tileSize;
+      this.targetY = this.gridY * tileS
     }
   }
 
