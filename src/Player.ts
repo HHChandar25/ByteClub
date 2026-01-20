@@ -165,6 +165,135 @@ export class Player extends GameObject {
     return true;
   }
 
+  /**
+   * Try to push a chain of objects
+   * Returns true if the entire chain can be pushed and pushes them all
+   */
+  private tryPushChain(
+    firstObj: Pushable,
+    dx: number,
+    dy: number,
+    grid: Grid,
+    pushables: Pushable[],
+    obstacles: Obstacle[]
+  ): boolean {
+    const chain: Pushable[] = [];
+    let currentObj: Pushable | null = firstObj;
+
+    while (currentObj) {
+      chain.push(currentObj);
+
+      const objGridX: number = Math.floor(currentObj.x / this.tileSize);
+      const objGridY: number = Math.floor(currentObj.y / this.tileSize);
+
+      const nextGridX: number = objGridX + dx;
+      const nextGridY: number = objGridY + dy;
+
+      const nextObj: Pushable | null = this.getPushableAt(nextGridX, nextGridY, pushables);
+
+      if (nextObj && !chain.includes(nextObj)) {
+        currentObj = nextObj;
+      } else {
+        currentObj = null;
+      }
+    }
+
+    const lastObj: Pushable = chain[chain.length - 1];
+    const lastObjGridX: number = Math.floor(lastObj.x / this.tileSize);
+    const lastObjGridY: number = Math.floor(lastObj.y / this.tileSize);
+    const finalGridX: number = lastObjGridX + dx;
+    const finalGridY: number = lastObjGridY + dy;
+
+    if (!grid.isValid(finalGridX, finalGridY)) {
+      return false;
+    }
+
+    const finalTile: Tile = grid.getTile(finalGridX, finalGridY)!;
+    if (!finalTile || !Player.isWalkableTile(finalTile.type)) {
+      return false;
+    }
+
+    for (const obstacle of obstacles) {
+      const obsPos: { x: number, y: number } = obstacle.getGridPosition();
+      if (obsPos.x === finalGridX && obsPos.y === finalGridY) {
+        return false;
+      }
+    }
+
+    const blocking: Pushable | null = this.getPushableAt(finalGridX, finalGridY, pushables);
+    if (blocking && !chain.includes(blocking)) {
+      return false;
+    }
+
+    for (let i: number = chain.length - 1; i >= 0; i--) {
+      chain[i].push(dx, dy, this.tileSize);
+    }
+
+    return true;
+  }
+
+  /**
+   * Get pushable object at grid position
+   */
+  private getPushableAt(gridX: number, gridY: number, pushables: Pushable[]): Pushable | null {
+    for (const obj of pushables) {
+      const objGridX: number = Math.floor(obj.x / this.tileSize);
+      const objGridY: number = Math.floor(obj.y / this.tileSize);
+
+      if (objGridX === gridX && objGridY === gridY) {
+        return obj;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Check if tile type is walkable
+   */
+  private static isWalkableTile(type: string): boolean {
+    const walkableTiles: string[] = ['floor1', 'floor2', 'floor3', 'exit'];
+    return walkableTiles.includes(type);
+  }
+
+  private updateDirection(dx: number, dy: number): void {
+    if (dx > 0) {
+      this.direction = 'right';
+      this.spriteName = 'character-right';
+    } else if (dx < 0) {
+      this.direction = 'left';
+      this.spriteName = 'character-left';
+    } else if (dy < 0) {
+      this.direction = 'front';
+      this.spriteName = 'character-back';
+    } else if (dy > 0) {
+      this.direction = 'down';
+      this.spriteName = 'character-front';
+    }
+  }
+
+  public override update(deltaTime: number): void {
+    if (!this.isMoving) {
+      return;
+    }
+
+    const dt: number = deltaTime / 1000; // Convert to seconds
+    const moveDistance: number = this.speed * dt;
+
+    const dx: number = this.targetX - this.x;
+    const dy: number = this.targetY - this.y;
+    const distance: number = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance <= moveDistance) {
+      this.x = this.targetX;
+      this.y = this.targetY;
+      this.isMoving = false;
+    } else {
+      const ratio: number = moveDistance / distance;
+      this.x += dx * ratio;
+      this.y += dy * ratio;
+    }
+  }
+
   public getIsMoving(): boolean {
     return this.isMoving;
   }
