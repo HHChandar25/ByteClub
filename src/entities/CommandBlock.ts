@@ -1,4 +1,5 @@
-import { GameObject } from './entities/GameObject.js';
+import { GameObject } from './GameObject.js';
+import { Grid, Tile } from '../systems/Grid.js';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type BlockColor = 'gray' | 'yellow' | 'green';
