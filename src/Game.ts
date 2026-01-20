@@ -184,6 +184,31 @@ export class Game {
       const objGridY: number = Math.floor(pushable.y / tileSize);
       if (objGridX === newX && objGridY === newY) {
         return null;
+        if (isActive) {
+        this.ctx.save();
+        this.ctx.shadowBlur = 20;
+        const glowColor: string = cmdBlock.getCommandColor() === 'green' ? '#00ff00' : '#ffff00';
+        this.ctx.shadowColor = glowColor;
+        this.ctx.globalAlpha = 0.6 + Math.sin(Date.now() / 200) * 0.3;
+
+        this.ctx.fillStyle = glowColor;
+        const glowX: number = cmdBlock.x + 3;
+        const glowY: number = cmdBlock.y + 3;
+        const glowSizeW: number = cmdBlock.width - 6;
+        const glowSizeH: number = cmdBlock.height - 6;
+
+        this.ctx.fillRect(glowX, glowY, glowSizeW, glowSizeH);
+        this.ctx.restore();
+      }
+
+      this.renderer.drawImage(
+        cmdBlock.spriteName,
+        cmdBlock.x,
+        cmdBlock.y - 7,
+        cmdBlock.width,
+        cmdBlock.height
+      );
+    }
       }
     }
 
