@@ -64,6 +64,137 @@ export class Obstacle extends GameObject {
     return this.color;
   }
 
+  /**
+   * Try to move obstacle in a direction
+   */
+  public tryMove(
+    dx: number,
+    dy: number,
+    grid: Grid,
+    obstacles: Obstacle[],
+    pushables: Pushable[] = [],
+    player: Player | null = null,
+    commandColor: ObstacleColor,
+    commandBlocks: CommandBlock[] = []
+  ): boolean {
+    if (this.isMoving) {
+      return false;
+    }
+
+    if (this.color !== commandColor) {
+      return false;
+    }
+
+    // If this block is part of a group, check if entire group (and chain) can move
+    if (this.obstacleGroup.length > 0) {
+      const moveResult: { canMove: boolean, chain: Obstacle[] } = this.canGroupMove(
+        dx,
+        dy,
+        grid,
+        obstacles,
+        pushables,
+        player,
+        commandBlocks
+      );
+      if (!moveResult.canMove) {
+        return false;
+      }
+
+      const allToMove: Set<Obstacle> = new Set([...this.obstacleGroup]);
+
+      for (const chainedObstacle of moveResult.chain) {
+        if (chainedObstacle.obstacleGroup.length > 0) {
+          for (const block of chainedObstacle.obstacleGroup) {
+            allToMove.add(block);
+          }
+        } else {
+          allToMove.add(chainedObstacle);
+        }
+      }
+
+      for (const block of allToMove) {
+        block.gridX += dx;
+        block.gridY += dy;
+        block.targetX = block.gridX * this.tileSize;
+        block.targetY = block.gridY * this.tileSize;
+        block.isMoving = true;
+      }
+
+      return true;
+    }
+
+    // Single block movement (fallback)
+    const newGridX: number = this.gridX + dx;
+    const newGridY: number = this.gridY + dy;
+
+    if (!grid.isValid(newGridX, newGridY)) {
+      return false;
+    }
+
+    const tile: Tile | null = grid.getTile(newGridX, newGridY);
+    if (!tile || !Obstacle.isWalkableTile(tile.type)) {
+      return false;
+    }
+
+    if (player) {
+      const playerPos: { x: number, y: number } = player.getGridPosition();
+      if (playerPos.x === newGridX && playerPos.y === newGridY) {
+        return false;
+      }
+    }
+
+    if (pushables) {
+      const tileSize: number = this.tileSize;
+      for (const pushable of pushables) {
+        const pushGridX: number = Math.floor(pushable.x / tileSize);
+        const pushGridY: number = Math.floor(pushable.y / tileSize);
+        if (pushGridX === newGridX && pushGridY === newGridY) {
+          return false;
+        }
+      }
+    }
+
+    if (commandBlocks) {
+      for (const cmdBlock of commandBlocks) {
+        const cmdPos: { x: number, y: number } = cmdBlock.getGridPosition();
+        if (cmdPos.x === newGridX && cmdPos.y === newGridY) {
+          return false;
+        }
+      }
+    }
+
+    for (const obstacle of obstacles) {
+      if (obstacle === this) {
+        continue;
+      }
+      const obstaclePos: { x: number, y: number } = obstacle.getGridPosition();
+      if (obstaclePos.x === newGridX && obstaclePos.y === newGridY) {
+        if (
+          !obstacle.tryMove(
+            dx,
+            dy,
+            grid,
+            obstacles,
+            pushables,
+            player,
+            commandColor,
+            commandBlocks
+          )
+        ) {
+          return false;
+        }
+      }
+    }
+
+    this.gridX = newGridX;
+    this.gridY = newGridY;
+    this.targetX = newGridX * this.tileSize;
+    this.targetY = newGridY * this.tileSize;
+    this.isMoving = true;
+
+    return true;
+  }
+
   private static isWalkableTile(type: string): boolean {
     const walkableTiles: string[] = ['floor1', 'floor2', 'floor3'];
     return walkableTiles.includes(type);
