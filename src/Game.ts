@@ -115,6 +115,90 @@ export class Game {
       );
     }
 
+  private tryMoveCommandBlockWithChain(
+    block: CommandBlock,
+    dx: number,
+    dy: number,
+    alreadyMoved: Set<CommandBlock>
+  ): CommandBlock[] | null {
+    if (alreadyMoved.has(block)) {
+      return [];
+    }
+
+    const blockPos: { x: number; y: number } = block.getGridPosition();
+    const newX: number = blockPos.x + dx;
+    const newY: number = blockPos.y + dy;
+
+    if (!this.grid.isValid(newX, newY)) {
+      return null;
+    }
+
+    const tile: Tile | null = this.grid.getTile(newX, newY);
+    if (!tile) {
+      return null;
+    }
+
+    const walkableTiles: string[] = ['floor1', 'floor2', 'floor3', 'exit'];
+    if (!walkableTiles.includes(tile.type)) {
+      return null;
+    }
+
+    for (const obstacle of this.obstacles) {
+      const obsPos: { x: number; y: number } = obstacle.getGridPosition();
+      if (obsPos.x === newX && obsPos.y === newY) {
+        return null;
+      }
+    }
+
+    const playerPos: { x: number; y: number } = this.player.getGridPosition();
+    if (playerPos.x === newX && playerPos.y === newY) {
+      return null;
+    }
+
+    const blockingBlock: CommandBlock | null = this.getCommandBlockAt(newX, newY);
+
+    if (blockingBlock && !alreadyMoved.has(blockingBlock)) {
+      const newAlreadyMoved: Set<CommandBlock> = new Set([...alreadyMoved, block]);
+
+      const chainResult: CommandBlock[] | null = this.tryMoveCommandBlockWithChain(
+        blockingBlock,
+        dx,
+        dy,
+        newAlreadyMoved
+      );
+
+      if (!chainResult) {
+        return null;
+      }
+
+      alreadyMoved.add(block);
+      block.push(dx, dy, this.grid.getTileSize());
+
+      return [...chainResult, block];
+    }
+
+    const tileSize: number = this.grid.getTileSize();
+
+    for (const pushable of this.pushables) {
+      const objGridX: number = Math.floor(pushable.x / tileSize);
+      const objGridY: number = Math.floor(pushable.y / tileSize);
+      if (objGridX === newX && objGridY === newY) {
+        return null;
+      }
+    }
+
+    for (const plusBlock of this.pushablePlusBlocks) {
+      const pos: { x: number; y: number } = plusBlock.getGridPosition();
+      if (pos.x === newX && pos.y === newY) {
+        return null;
+      }
+    }
+
+    alreadyMoved.add(block);
+    block.push(dx, dy, this.grid.getTileSize());
+    return [block];
+  }
+
     this.player.update(deltaTime);
 
     for (const p of this.pushables) p.update(deltaTime);
