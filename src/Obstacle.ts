@@ -65,6 +65,98 @@ export class Obstacle extends GameObject {
   }
 
   /**
+   * Check if this block can move as part of its group (with chain support)
+   */
+  private canGroupMove(
+    dx: number,
+    dy: number,
+    grid: Grid,
+    allObstacles: Obstacle[],
+    pushables: Pushable[] = [],
+    player: Player | null = null,
+    commandBlocks: CommandBlock[] = [],
+    movedObstacles: Set<Obstacle> = new Set()
+  ): { canMove: boolean, chain: Obstacle[] } {
+    const chain: Obstacle[] = [];
+
+    // Check if all blocks in the group can move
+    for (const block of this.obstacleGroup) {
+      const newGridX: number = block.gridX + dx;
+      const newGridY: number = block.gridY + dy;
+
+      if (!grid.isValid(newGridX, newGridY)) {
+        return { canMove: false, chain: [] };
+      }
+
+      const tile: Tile | null = grid.getTile(newGridX, newGridY);
+      if (!tile || !Obstacle.isWalkableTile(tile.type)) {
+        return { canMove: false, chain: [] };
+      }
+
+      // Check if player is blocking
+      if (player) {
+        const playerPos: { x: number, y: number } = player.getGridPosition();
+        if (playerPos.x === newGridX && playerPos.y === newGridY) {
+          return { canMove: false, chain: [] };
+        }
+      }
+
+      // Check if pushable objects are blocking
+      if (pushables) {
+        const tileSize: number = this.tileSize;
+        for (const pushable of pushables) {
+          const pushGridX: number = Math.floor(pushable.x / tileSize);
+          const pushGridY: number = Math.floor(pushable.y / tileSize);
+          if (pushGridX === newGridX && pushGridY === newGridY) {
+            return { canMove: false, chain: [] };
+          }
+        }
+      }
+
+      // Check if command blocks are blocking
+      if (commandBlocks) {
+        for (const cmdBlock of commandBlocks) {
+          const cmdPos: { x: number, y: number } = cmdBlock.getGridPosition();
+          if (cmdPos.x === newGridX && cmdPos.y === newGridY) {
+            return { canMove: false, chain: [] };
+          }
+        }
+      }
+
+      // Check if another obstacle (not in our group and not already moved) is blocking
+      for (const obstacle of allObstacles) {
+        if (this.obstacleGroup.includes(obstacle)) {
+          continue;
+        }
+        if (movedObstacles.has(obstacle)) {
+          continue;
+        }
+
+        const obstaclePos: { x: number, y: number } = obstacle.getGridPosition();
+        if (obstaclePos.x === newGridX && obstaclePos.y === newGridY) {
+          const chainResult: { canMove: boolean, chain: Obstacle[] } = obstacle.canGroupMove(
+            dx,
+            dy,
+            grid,
+            allObstacles,
+            pushables,
+            player,
+            commandBlocks,
+            new Set([...movedObstacles, ...this.obstacleGroup])
+          );
+          if (!chainResult.canMove) {
+            return { canMove: false, chain: [] };
+          }
+
+          chain.push(...chainResult.chain);
+        }
+      }
+    }
+
+    return { canMove: true, chain: chain };
+  }
+
+  /**
    * Try to move obstacle in a direction
    */
   public tryMove(
