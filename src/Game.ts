@@ -130,4 +130,47 @@ export class Game {
       this.levelComplete = true;
     }
   }
+
+  private render(): void {
+    this.renderer.clear('#0a0a0a');
+    this.renderer.renderGrid(this.grid);
+
+    for (const cmd of this.commandBlocks) {
+      this.renderer.drawImage(
+        cmd.spriteName,
+        cmd.x,
+        cmd.y,
+        cmd.width,
+        cmd.height
+      );
+    }
+
+    for (const obs of this.obstacles) {
+      this.renderer.drawImage(
+        obs.spriteName,
+        obs.x,
+        obs.y,
+        obs.width,
+        obs.height
+      );
+    }
+
+    for (const p of this.pushables) {
+      this.renderer.drawImage(
+        p.spriteName,
+        p.x,
+        p.y,
+        p.width,
+        p.height
+      );
+    }
+
+    this.renderer.drawImage(
+      this.player.spriteName,
+      this.player.x,
+      this.player.y,
+      this.player.width,
+      this.player.height
+    );
+  }
 }
