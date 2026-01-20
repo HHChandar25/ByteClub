@@ -26,4 +26,43 @@ export class AssetLoader {
       this.loadOne(assetList[i]);
     }
   }
+
+  private loadOne(asset: Asset): void {
+    const img: HTMLImageElement = new Image();
+
+    img.onload = (): void => {
+      this.assets.set(asset.name, img);
+      this.loaded += 1;
+
+      if (this.loaded === this.toLoad.length && this.onComplete) {
+        this.onComplete();
+      }
+    };
+
+    img.onerror = (): void => {
+      console.error('Failed to load: ' + asset.path);
+      this.loaded += 1;
+
+      if (this.loaded === this.toLoad.length && this.onComplete) {
+        this.onComplete();
+      }
+    };
+
+    img.src = asset.path;
+  }
+
+  public get(name: string): HTMLImageElement | undefined {
+    return this.assets.get(name);
+  }
+
+  public getProgress(): number {
+    if (this.toLoad.length === 0) {
+      return 1;
+    }
+    return this.loaded / this.toLoad.length;
+  }
+
+  public isLoaded(): boolean {
+    return this.loaded === this.toLoad.length;
+  }
 }
