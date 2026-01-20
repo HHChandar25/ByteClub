@@ -1,4 +1,4 @@
-import { GameObject } from './GameObject.js';
+import { GameObject } from './entities/GameObject.js';
 
 export class PushablePlusBlock extends GameObject {
   private gridX: number;

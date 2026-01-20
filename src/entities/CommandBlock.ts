@@ -1,4 +1,4 @@
-import { GameObject } from './GameObject.js';
+import { GameObject } from './entities/GameObject.js';
 
 export type Direction = 'up' | 'down' | 'left' | 'right';
 export type BlockColor = 'gray' | 'yellow' | 'green';
