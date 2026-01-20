@@ -84,8 +84,6 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
 
 # Dependency directories
 node_modules/
@@ -185,8 +183,6 @@ $RECYCLE.BIN/
 package-lock.json
 pnpm-lock.yaml
 
-# Don't commit build artifacts either
-build/
 
 # drawio temp files
 *.drawio.bkp
