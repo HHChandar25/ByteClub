@@ -30,6 +30,31 @@ export class LevelManager {
    * Initialize all game levels
    */
   private initializeLevels(): void {
+    // Level 1
+    this.levels.push({
+      name: 'Level 1',
+      grid: [
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 4, 5, 0, 0, 0, 0, 0, 0],
+        [0, 0, 4, 5, 4, 5, 4, 2, 2, 4, 5, 0, 0, 0, 0],
+        [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 7, 0, 0, 0],
+        [0, 0, 0, 0, 2, 2, 4, 5, 4, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+      ],
+      playerStart: { x: 2, y: 5 },
+      pushables: [{ x: 7, y: 5 }],
+      pushablePlusBlocks: [],
+      commandBlocks: [],
+      obstacleGroups: [],
+      exit: { x: 11, y: 5 }
+    });
+
 
   }
 
@@ -41,7 +66,8 @@ export class LevelManager {
   }
 
   /**
-   * Load level into grid and return setup data   */
+   * Load level into grid and return setup data
+   */
   public loadLevel(grid: Grid, tileSize: number): {
     playerStart: { x: number, y: number },
     pushables: PushableObject[],
