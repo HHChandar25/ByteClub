@@ -1,43 +1,133 @@
-# Magnetic & Electric Fields Demo  
-**Interactive Physics Simulation for Education — Built in TypeScript** 
+# ⚡ Sparky's Journey
 
-This project is a **science-based interactive demo** designed to teach the fundamentals of **magnetic and electric fields** through a visual and experimental environment.  
-Users can interact with magnets/charges, spawn particles, and observe attraction/repulsion forces in real time.
+A grid-based puzzle game built with **TypeScript** and **HTML Canvas**, where players solve levels by moving blocks, completing electric circuits, and triggering command blocks to reach the exit.
 
-📅 Presentation Deadline: **Dec 12**  
-👤 Developer: Guilherme Henriques
+---
 
-##  Core Objectives
+## 🎮 Gameplay Overview
 
-- Demonstrate **magnetic & electric field behavior visually**
-- Allow users to **experiment** with particles and charges
-- Teach science through **interaction instead of explanation**
-- Create a **polished tutorial demo** for educational use
+The player navigates through a tile-based level using keyboard controls.
+Each level contains interactive elements such as:
 
-##  Tech Stack
+* **Pushable blocks**
+* **Command blocks** that execute movements
+* **Plus (+) and Minus (−) blocks** that form electric circuits
+* **Obstacles** that react to commands
+* **An exit tile** to complete the level
 
-| Technology | Usage |
-|---|---|
-| **TypeScript** | Core logic & physics |
-| **HTML5 Canvas** | Rendering & visualization |
-| **CSS** | UI elements and styling |
+To finish a level, the player must:
 
->       All documentation is inside the './docs' folder
- 
-## Documentation Access
+1. Activate command blocks by completing electric circuits
+2. Use logic and movement to reposition blocks
+3. Reach the exit tile once the puzzle is solved
 
-| File | Description |
-|---|---|
-| `docs/SPRINTPLAN.md` | `Full sprint planning & timeline (Dec 9 → 12)` |
-| `docs/RESEARCH-BRAINSTORM.md` | `Research notes + concept brainstorming` |
-| `docs/STORYBOARD-TUTORIAL` | `How i imagine the Tutorial Scenes` |
-| `docs/classDiagramMagnets.md` | `Initial Magnet Class Diagram` |
+---
 
-## Work Status (Live Progress)
+## 🧠 Core Mechanics
 
-| Component | Status |
-|---|---|
-| `Research + Concept` | `Complete` |
-| `Class & Architecture Design` | `Complete` |
-| `Ui Design (Scenes)` | `Complete` |
-| `Magnet Atraction And Repel` | `Bug Fixing Now` |
+### 🔌 Electric Circuits
+
+* A circuit is formed when a **Plus block** and a **Minus block** are aligned horizontally or vertically
+* All tiles between them must be empty or contain command blocks
+* When a circuit is complete, electricity effects are rendered and command blocks activate
+
+### 📦 Command Blocks
+
+* Each command block has:
+
+  * A **block color**
+  * A **command color**
+  * A **direction**
+* When activated, they move all blocks and obstacles of the same color
+
+### 🧱 Pushable Blocks
+
+* Can be pushed by the player
+* Some blocks can be held in place using **Shift**
+
+### 🚧 Obstacles
+
+* Can block paths
+* Some obstacles move only when triggered by command blocks
+
+---
+
+## 🎹 Controls
+
+| Key               | Action                |
+| ----------------- | --------------------- |
+| Arrow Keys / WASD | Move player           |
+| Shift (hold)      | Hold pushable blocks  |
+| R                 | Restart current level |
+
+---
+
+## 🗺️ Levels
+
+* Levels are managed via the `LevelManager`
+* Each level defines:
+
+  * Grid layout
+  * Player start position
+  * Pushables
+  * Command blocks
+  * Obstacles
+  * Exit tile
+* Completing a level automatically loads the next one
+* Completing all levels finishes the game 🎉
+
+---
+
+## 🧱 Project Structure
+
+```
+src/
+├── core/
+│   ├── Game.ts
+│   ├── Renderer.ts
+│   └── AssetLoader.ts
+│
+├── entities/
+│   ├── Player.ts
+│   ├── PushableObject.ts
+│   ├── PushablePlusBlock.ts
+│   ├── CommandBlock.ts
+│   ├── Obstacle.ts
+│   └── GameObject.ts
+│
+├── systems/
+│   ├── Grid.ts
+│   ├── InputHandler.ts
+│   └── LevelManager.ts
+│
+├── effects/
+│   └── ElectricityEffect.ts
+│
+└── assets/
+```
+
+---
+
+## 🛠️ Technologies Used
+
+* **TypeScript**
+* **HTML5 Canvas**
+* **ES Modules**
+* **Object-Oriented Design**
+* **Custom game loop & renderer**
+
+---
+
+## ▶️ Running the Game Locally
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Build the project
+
+```bash
+npm run build
+```
